@@ -27,10 +27,10 @@ const View = () => {
       return;
     }
     
-    // Small delay to show loading state and build anticipation
+    // Small delay to show loading state and prevent race conditions
     const timer = setTimeout(() => {
       try {
-        // Just check if the message exists first, don't view it yet
+        // IMPORTANT: Just check if the message exists first, don't view it yet
         const secretMessage = getSecretMessage(id);
         
         if (!secretMessage) {
@@ -52,8 +52,10 @@ const View = () => {
   }, [id]);
 
   const handleReveal = () => {
-    if (id && message) {
-      // Only now we actually view and delete the message
+    if (!id || !message) return;
+    
+    // Only now we actually view and delete the message
+    try {
       const viewedMessage = viewAndDeleteMessage(id);
       
       if (viewedMessage) {
@@ -63,6 +65,9 @@ const View = () => {
       } else {
         setError('Message could not be retrieved. It may have expired.');
       }
+    } catch (err) {
+      console.error('Error revealing message:', err);
+      setError('Failed to reveal the message');
     }
   };
 

@@ -1,4 +1,3 @@
-
 export interface Confession {
   id: string;
   content: string;
@@ -82,14 +81,16 @@ export const getSecretMessage = (id: string): SecretMessage | null => {
   const messages = getSecretMessages();
   const message = messages.find(msg => msg.id === id);
   
-  // Check if message exists and is not expired
-  if (message && message.expiresAt < Date.now()) {
+  if (!message) return null;
+  
+  // Check if message is expired
+  if (message.expiresAt < Date.now()) {
     // If expired, remove it
     deleteMessage(id);
     return null;
   }
   
-  return message || null;
+  return message;
 };
 
 // Helper function to delete a message without viewing it
