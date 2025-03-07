@@ -3,7 +3,7 @@ export interface Confession {
   id: string;
   content: string;
   createdAt: number;
-  expiresAt: number; // New field for confessions expiration
+  expiresAt: number; // For confessions expiration
 }
 
 export interface SecretMessage {
@@ -63,10 +63,21 @@ export const addConfession = (content: string): Confession => {
 export const getSecretMessages = (): SecretMessage[] => {
   const storedMessages = localStorage.getItem(MESSAGES_KEY);
   if (!storedMessages) return [];
-  return JSON.parse(storedMessages);
+  
+  // Parse and filter expired messages
+  const messages = JSON.parse(storedMessages);
+  const now = Date.now();
+  const validMessages = messages.filter((message: SecretMessage) => message.expiresAt > now);
+  
+  // Update storage if we filtered out any expired messages
+  if (validMessages.length !== messages.length) {
+    localStorage.setItem(MESSAGES_KEY, JSON.stringify(validMessages));
+  }
+  
+  return validMessages;
 };
 
-// Get a single secret message by ID
+// Get a single secret message by ID without marking it as viewed
 export const getSecretMessage = (id: string): SecretMessage | null => {
   const messages = getSecretMessages();
   const message = messages.find(msg => msg.id === id);
@@ -74,11 +85,18 @@ export const getSecretMessage = (id: string): SecretMessage | null => {
   // Check if message exists and is not expired
   if (message && message.expiresAt < Date.now()) {
     // If expired, remove it
-    viewAndDeleteMessage(id);
+    deleteMessage(id);
     return null;
   }
   
   return message || null;
+};
+
+// Helper function to delete a message without viewing it
+export const deleteMessage = (id: string): void => {
+  const messages = getSecretMessages();
+  const filteredMessages = messages.filter(msg => msg.id !== id);
+  localStorage.setItem(MESSAGES_KEY, JSON.stringify(filteredMessages));
 };
 
 // Create a new secret message
@@ -98,7 +116,7 @@ export const createSecretMessage = (content: string, expiryHours = 24): SecretMe
   return newMessage;
 };
 
-// Mark a message as viewed and delete it
+// Mark a message as viewed and delete it - only called when explicitly requested
 export const viewAndDeleteMessage = (id: string): SecretMessage | null => {
   const messages = getSecretMessages();
   const messageIndex = messages.findIndex(msg => msg.id === id);
@@ -147,4 +165,3 @@ export const cleanupExpiredMessages = (): void => {
     localStorage.setItem(CONFESSIONS_KEY, JSON.stringify(validConfessions));
   }
 };
-
