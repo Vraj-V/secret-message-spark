@@ -16,6 +16,7 @@ const View = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [alreadyViewed, setAlreadyViewed] = useState(false);
 
   useEffect(() => {
     // Clean up expired messages
@@ -34,7 +35,12 @@ const View = () => {
         const secretMessage = getSecretMessage(id);
         
         if (!secretMessage) {
-          setError('This message has expired or has already been viewed');
+          setError('This message has expired or does not exist');
+          setIsLoading(false);
+        } else if (secretMessage.viewed) {
+          // The current user has already viewed this message
+          setAlreadyViewed(true);
+          setMessage(secretMessage);
           setIsLoading(false);
         } else {
           // Message exists, set it in state but don't mark as viewed yet
@@ -61,7 +67,7 @@ const View = () => {
       if (viewedMessage) {
         setMessage(viewedMessage);
         setIsRevealed(true);
-        toast.success('Message revealed! It will now be deleted permanently.');
+        toast.success('Message revealed! You won\'t be able to view it again.');
       } else {
         setError('Message could not be retrieved. It may have expired.');
       }
@@ -98,6 +104,23 @@ const View = () => {
       );
     }
     
+    if (alreadyViewed) {
+      return (
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center">
+            <Eye className="h-8 w-8 text-amber-500" />
+          </div>
+          <h2 className="text-xl font-semibold">You've Already Viewed This Message</h2>
+          <p className="text-muted-foreground text-center max-w-md">
+            This message was previously viewed by you and can't be viewed again.
+          </p>
+          <Button onClick={() => navigate('/create')} variant="outline" className="mt-4">
+            Create Your Own Secret Message
+          </Button>
+        </div>
+      );
+    }
+    
     if (message && !isRevealed) {
       return (
         <div className="flex flex-col items-center space-y-6 animate-fade-in">
@@ -108,7 +131,7 @@ const View = () => {
           <div className="text-center space-y-2">
             <h2 className="text-xl font-semibold">Someone sent you a secret message</h2>
             <p className="text-muted-foreground">
-              This message will disappear forever once you read it.
+              This message will be revealed to you only once.
             </p>
           </div>
           
@@ -150,7 +173,7 @@ const View = () => {
           
           <div className="text-center space-y-2 mt-8">
             <p className="text-muted-foreground text-sm">
-              This message has been permanently deleted.
+              You won't be able to view this message again.
             </p>
             <Button 
               onClick={() => navigate('/create')} 

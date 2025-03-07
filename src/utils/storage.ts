@@ -11,10 +11,12 @@ export interface SecretMessage {
   createdAt: number;
   expiresAt: number;
   viewed: boolean;
+  viewToken?: string; // Token required to view the message
 }
 
 const CONFESSIONS_KEY = 'confessions';
 const MESSAGES_KEY = 'secret_messages';
+const VIEWED_MESSAGES_KEY = 'viewed_messages'; // New storage for tracking viewed messages
 
 // Helper to generate unique ID
 export const generateId = (): string => {
@@ -76,6 +78,21 @@ export const getSecretMessages = (): SecretMessage[] => {
   return validMessages;
 };
 
+// Check if current user has viewed a message
+const hasViewedMessage = (messageId: string): boolean => {
+  const viewedMessages = JSON.parse(localStorage.getItem(VIEWED_MESSAGES_KEY) || '[]');
+  return viewedMessages.includes(messageId);
+};
+
+// Mark a message as viewed by current user
+const markMessageAsViewed = (messageId: string): void => {
+  const viewedMessages = JSON.parse(localStorage.getItem(VIEWED_MESSAGES_KEY) || '[]');
+  if (!viewedMessages.includes(messageId)) {
+    viewedMessages.push(messageId);
+    localStorage.setItem(VIEWED_MESSAGES_KEY, JSON.stringify(viewedMessages));
+  }
+};
+
 // Get a single secret message by ID without marking it as viewed
 export const getSecretMessage = (id: string): SecretMessage | null => {
   const messages = getSecretMessages();
@@ -88,6 +105,11 @@ export const getSecretMessage = (id: string): SecretMessage | null => {
     // If expired, remove it
     deleteMessage(id);
     return null;
+  }
+  
+  // Check if the current user has already viewed this message
+  if (hasViewedMessage(id)) {
+    return { ...message, viewed: true };
   }
   
   return message;
@@ -103,12 +125,15 @@ export const deleteMessage = (id: string): void => {
 // Create a new secret message
 export const createSecretMessage = (content: string, expiryHours = 24): SecretMessage => {
   const messages = getSecretMessages();
+  const viewToken = generateId(); // Generate a unique token for viewing
+  
   const newMessage: SecretMessage = {
     id: generateId(),
     content,
     createdAt: Date.now(),
     expiresAt: Date.now() + (expiryHours * 60 * 60 * 1000),
-    viewed: false
+    viewed: false,
+    viewToken
   };
   
   const updatedMessages = [newMessage, ...messages];
@@ -117,7 +142,7 @@ export const createSecretMessage = (content: string, expiryHours = 24): SecretMe
   return newMessage;
 };
 
-// Mark a message as viewed and delete it - only called when explicitly requested
+// Mark a message as viewed by the current user
 export const viewAndDeleteMessage = (id: string): SecretMessage | null => {
   const messages = getSecretMessages();
   const messageIndex = messages.findIndex(msg => msg.id === id);
@@ -134,12 +159,16 @@ export const viewAndDeleteMessage = (id: string): SecretMessage | null => {
     return null;
   }
   
+  // Check if the current user has already viewed this message
+  if (hasViewedMessage(id)) {
+    return { ...message, viewed: true };
+  }
+  
+  // Mark as viewed for the current user
+  markMessageAsViewed(id);
+  
   // Message exists and is not expired
   const viewedMessage = { ...message, viewed: true };
-  
-  // Remove the message from storage
-  messages.splice(messageIndex, 1);
-  localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages));
   
   return viewedMessage;
 };
