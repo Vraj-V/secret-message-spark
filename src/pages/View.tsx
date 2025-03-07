@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { SecretMessage, viewAndDeleteMessage, cleanupExpiredMessages } from '@/utils/storage';
+import { SecretMessage, getSecretMessage, viewAndDeleteMessage, cleanupExpiredMessages } from '@/utils/storage';
 import CountdownTimer from '@/components/CountdownTimer';
 import Navbar from '@/components/Navbar';
 import FloatingGradients from '@/components/FloatingGradients';
@@ -30,18 +30,20 @@ const View = () => {
     // Small delay to show loading state and build anticipation
     const timer = setTimeout(() => {
       try {
-        // Try to retrieve and view the message
-        const viewedMessage = viewAndDeleteMessage(id);
+        // Just check if the message exists first, don't view it yet
+        const secretMessage = getSecretMessage(id);
         
-        if (!viewedMessage) {
+        if (!secretMessage) {
           setError('This message has expired or has already been viewed');
+          setIsLoading(false);
         } else {
-          setMessage(viewedMessage);
+          // Message exists, set it in state but don't mark as viewed yet
+          setMessage(secretMessage);
+          setIsLoading(false);
         }
       } catch (err) {
         console.error('Error viewing message:', err);
         setError('Failed to load the message');
-      } finally {
         setIsLoading(false);
       }
     }, 1000);
@@ -50,8 +52,18 @@ const View = () => {
   }, [id]);
 
   const handleReveal = () => {
-    setIsRevealed(true);
-    toast.success('Message revealed! It will now be deleted permanently.');
+    if (id && message) {
+      // Only now we actually view and delete the message
+      const viewedMessage = viewAndDeleteMessage(id);
+      
+      if (viewedMessage) {
+        setMessage(viewedMessage);
+        setIsRevealed(true);
+        toast.success('Message revealed! It will now be deleted permanently.');
+      } else {
+        setError('Message could not be retrieved. It may have expired.');
+      }
+    }
   };
 
   const renderMessageState = () => {
