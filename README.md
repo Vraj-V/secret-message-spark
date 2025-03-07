@@ -1,69 +1,22 @@
-# Welcome to your Lovable project
+Secret Confessions Platform
+A secure and anonymous platform for sharing confessions and sending self-destructing secret messages.
 
-## Project info
+Features
+Anonymous Confessions: Post confessions without logging in.
 
-**URL**: https://lovable.dev/projects/455a02f7-d8ed-426f-990b-53e2d1f4f6f6
+One-Time View Messages: Send secret messages that can only be viewed once.
 
-## How can I edit this code?
+Live Countdown Timer: Displays when a message will expire (e.g., 24 hours).
 
-There are several ways of editing your application.
+Self-Destructing Messages: Messages are automatically deleted after being viewed or expiring.
 
-**Use Lovable**
+Optional User Authentication: Log in with Google for additional features.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/455a02f7-d8ed-426f-990b-53e2d1f4f6f6) and start prompting.
+Tech Stack
+Frontend: React, TypeScript, HTML, CSS
 
-Changes made via Lovable will be committed automatically to this repo.
+Backend: Node.js, Express.js
 
-**Use your preferred IDE**
+Database: MongoDB (for confessions and user data), Redis (for temporary message storage)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/455a02f7-d8ed-426f-990b-53e2d1f4f6f6) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Authentication: Firebase Authentication (Google Login)
